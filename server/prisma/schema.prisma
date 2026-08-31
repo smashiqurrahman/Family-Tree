@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  UNKNOWN
+}
+
+enum RelationshipType {
+  PARENT
+  SPOUSE
+}
+
+enum TreeMemberRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  avatar       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  ownedTrees  Tree[]       @relation("TreeOwner")
+  treeMembers TreeMember[]
+
+  @@map("users")
+}
+
+model Tree {
+  id          Int      @id @default(autoincrement())
+  ownerId     Int      @map("owner_id")
+  name        String
+  description String?  @db.Text
+  coverImage  String?  @map("cover_image")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  owner         User           @relation("TreeOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  persons       Person[]
+  members       TreeMember[]
+  relationships Relationship[]
+
+  @@index([ownerId])
+  @@map("trees")
+}
+
+model Person {
+  id        Int       @id @default(autoincrement())
+  treeId    Int       @map("tree_id")
+  name      String
+  gender    Gender    @default(UNKNOWN)
+  birthDate DateTime? @map("birth_date") @db.Date
+  deathDate DateTime? @map("death_date") @db.Date
+  photo     String?
+  bio       String?   @db.Text
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  tree Tree @relation(fields: [treeId], references: [id], onDelete: Cascade)
+
+  relationshipsAsA Relationship[] @relation("RelationshipPersonA")
+  relationshipsAsB Relationship[] @relation("RelationshipPersonB")
+
+  @@index([treeId])
+  @@map("persons")
+}
+
+model Relationship {
+  id        Int              @id @default(autoincrement())
+  treeId    Int              @map("tree_id")
+  personAId Int              @map("person_a_id")
+  personBId Int              @map("person_b_id")
+  type      RelationshipType
+
+  tree    Tree   @relation(fields: [treeId], references: [id], onDelete: Cascade)
+  personA Person @relation("RelationshipPersonA", fields: [personAId], references: [id], onDelete: Cascade)
+  personB Person @relation("RelationshipPersonB", fields: [personBId], references: [id], onDelete: Cascade)
+
+  @@unique([treeId, personAId, personBId, type])
+  @@index([treeId, personAId])
+  @@index([treeId, personBId])
+  @@map("relationships")
+}
+
+model TreeMember {
+  id        Int            @id @default(autoincrement())
+  treeId    Int            @map("tree_id")
+  userId    Int            @map("user_id")
+  role      TreeMemberRole
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  tree Tree @relation(fields: [treeId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([treeId, userId])
+  @@index([userId])
+  @@map("tree_members")
+}
