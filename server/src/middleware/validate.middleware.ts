@@ -1,7 +1,15 @@
 import type { RequestHandler } from "express";
 import type { ZodType } from "zod";
 
-const validate = (schema: ZodType): RequestHandler => {
+type ValidationData = {
+  body: unknown;
+  params: unknown;
+  query: unknown;
+};
+
+const validate = (
+  schema: ZodType<ValidationData>
+): RequestHandler => {
   return (req, _res, next) => {
     const result = schema.safeParse({
       body: req.body,
@@ -15,7 +23,6 @@ const validate = (schema: ZodType): RequestHandler => {
     }
 
     req.body = result.data.body;
-    req.params = result.data.params;
 
     next();
   };

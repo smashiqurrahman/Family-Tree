@@ -7,12 +7,19 @@ import errorMiddleware from "./middleware/error.middleware";
 import AppError from "./utils/AppError";
 import z from "zod";
 import validate from "./middleware/validate.middleware";
+import authRoutes from "./modules/auth/auth.routes";
 
+// library use start
 const app = express();
 
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+// library use end
+
+// Routes start
+app.use("/api/auth", authRoutes);
+// Routes end
 
 app.get("/api/health", (_req, res) => {
   res.json({
@@ -72,6 +79,7 @@ app.post(
   }
 );
 
+// error handling middleware should be the last middleware
 app.use(errorMiddleware);
 
 export default app;
