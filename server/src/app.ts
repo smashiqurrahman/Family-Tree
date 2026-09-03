@@ -8,6 +8,8 @@ import AppError from "./utils/AppError";
 import z from "zod";
 import validate from "./middleware/validate.middleware";
 import authRoutes from "./modules/auth/auth.routes";
+import treeRoutes from "./modules/trees/tree.routes";
+import personRoutes from "./modules/person/person.routes";
 
 // library use start
 const app = express();
@@ -19,6 +21,8 @@ app.use(express.json());
 
 // Routes start
 app.use("/api/auth", authRoutes);
+app.use("/api/trees", treeRoutes);
+app.use("/api", personRoutes);
 // Routes end
 
 app.get("/api/health", (_req, res) => {

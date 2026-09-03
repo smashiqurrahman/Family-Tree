@@ -41,19 +41,20 @@ model User {
 }
 
 model Tree {
-  id          Int      @id @default(autoincrement())
-  ownerId     Int      @map("owner_id")
+  id          Int       @id @default(autoincrement())
+  ownerId     Int       @map("owner_id")
   name        String
-  description String?  @db.Text
-  coverImage  String?  @map("cover_image")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  description String?   @db.Text
+  coverImage  String?   @map("cover_image")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   owner         User           @relation("TreeOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   persons       Person[]
   members       TreeMember[]
   relationships Relationship[]
 
+  @@unique([ownerId, name])
   @@index([ownerId])
   @@map("trees")
 }
